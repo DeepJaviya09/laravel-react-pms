@@ -7,18 +7,19 @@ import { Head, Link, router, useForm } from "@inertiajs/react";
 import SelectInput from "@/Components/SelectInput";
 
 export default function Create({ auth, project }) {
-  const { data, setData, put, errors, reset } = useForm({
+  const { data, setData, post, errors, reset } = useForm({
     image: "",
     name: project.name || "",
     status: project.status || "",
     description: project.description || "",
     due_date: project.due_date || "",
+    _method: 'PUT'
   });
 
   const onSubmit = (e) => {
     e.preventDefault();
 
-    put(route("project.update", project.id));
+    post(route("project.update", project.id));
   };
   return (
     <AuthenticatedLayout

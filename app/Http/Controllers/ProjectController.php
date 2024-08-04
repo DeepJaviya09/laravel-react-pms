@@ -9,6 +9,7 @@ use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class ProjectController extends Controller
 {
@@ -108,6 +109,7 @@ class ProjectController extends Controller
      */
     public function update(UpdateProjectRequest $request, Project $project)
     {
+        // dd($request->all());
         $data = $request->validated();
         // dd($data);
         $image = $data['image'] ?? null;
@@ -115,11 +117,11 @@ class ProjectController extends Controller
         
         if ($image) {
             if ($project->image_path) {
-                Storage:disk('public')->delete($project->image_path);
+                Storage::disk('public')->delete(dirname($project->image_path));
             }
-            $data['image_path'] = $image->store('project/'.Str::random(), 'public' );
+            $data['image_path'] = $image->store('project/'.Str::random(), 'public');
         }
-        $project->update($request->validated());
+        $project->update($data);
 
         return to_route('project.index')->with('success', "Project {$project->name} hasbeen updated !");
     }
@@ -131,6 +133,9 @@ class ProjectController extends Controller
     {
         $name = $project->name;
         $project->delete();
+        if ($project->image_path) {
+            Storage::disk('public')->delete(dirname($project->image_path));
+        }
         return to_route('project.index')->with('success', "Project {$name} deleted!");
     }
 }
