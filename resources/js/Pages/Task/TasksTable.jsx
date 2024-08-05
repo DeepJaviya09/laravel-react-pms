@@ -96,7 +96,7 @@ export default function TasksTable({ tasks, queryParams = null, hideProjectColum
               <th className="px-3 py-3">
                 <TextInput
                   className="w-full"
-                  placeholder="task name"
+                  placeholder="project name"
                   defaultValue={queryParams.name}
                   onBlur={(e) => searchFieldChanged("name", e.target.value)}
                   onKeyPress={(e) => onKeyPress("name", e)}
