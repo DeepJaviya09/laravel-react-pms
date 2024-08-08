@@ -6,14 +6,15 @@ import { TASK_STATUS_TEXT_MAP, TASK_STATUS_CLASS_MAP } from "@/constants";
 import Pagination from "@/Components/Pagination";
 
 export default function TasksTable({ tasks, success, queryParams = null, hideProjectColumn = false }) {
-  queryParams = queryParams || {}
+  queryParams = queryParams || {};
+
   const searchFieldChanged = (name, value) => {
     if (value) {
       queryParams[name] = value;
     } else {
       delete queryParams[name];
     }
-    router.get(route("task.index"), queryParams);
+    router.get(route("task.index"), queryParams, { preserveState: true });
   };
 
   const onKeyPress = (name, e) => {
@@ -33,11 +34,11 @@ export default function TasksTable({ tasks, success, queryParams = null, hidePro
       queryParams.sort_field = name;
       queryParams.sort_direction = "asc";
     }
-    router.get(route("task.index"), queryParams);
+    router.get(route("task.index"), queryParams, { preserveState: true });
   };
 
   const deleteTask = (task) => {
-    if (!window.confirm('are you sure?')) {
+    if (!window.confirm('Are you sure?')) {
       return;
     }
     router.delete(route('task.destroy', task.id))
@@ -180,7 +181,7 @@ export default function TasksTable({ tasks, success, queryParams = null, hidePro
           </tbody>
         </table>
       </div>
-      <Pagination links={tasks.meta.links} />
+      <Pagination links={tasks.meta.links} queryParams={queryParams} />
     </>
   );
 }

@@ -15,7 +15,7 @@ export default function Index({ auth, projects, queryParams = null, success }) {
     } else {
       delete queryParams[name];
     }
-    router.get(route("project.index"), queryParams);
+    router.get(route("project.index"), queryParams, { preserveState: true });
   };
 
   const onKeyPress = (name, e) => {
@@ -35,7 +35,7 @@ export default function Index({ auth, projects, queryParams = null, success }) {
       queryParams.sort_field = name;
       queryParams.sort_direction = "asc";
     }
-    router.get(route("project.index"), queryParams);
+    router.get(route("project.index"), queryParams,  { preserveState: true });
   };
 
   const deleteProject = (project) => {
@@ -212,7 +212,7 @@ export default function Index({ auth, projects, queryParams = null, success }) {
                   </tbody>
                 </table>
               </div>
-              <Pagination links={projects.meta.links} />
+              <Pagination links={tasks.meta.links} queryParams={queryParams} />
             </div>
           </div>
         </div>

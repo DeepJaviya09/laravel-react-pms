@@ -18,7 +18,7 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $query = Project::query();
+        $query = Project::query()->whereHas('tasks');
 
         $sortFields = request("sort_field", 'created_at');
         $sortDirection = request("sort_direction", "desc");

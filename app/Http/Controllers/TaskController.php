@@ -22,7 +22,7 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $query = Task::query();
+        $query = Task::query()->whereHas('project');
 
         $sortFields = request("sort_field", 'created_at');
         $sortDirection = request("sort_direction", "desc");
