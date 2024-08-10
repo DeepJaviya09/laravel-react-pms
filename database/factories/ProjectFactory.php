@@ -4,6 +4,8 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
+use App\Models\User;
+
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Project>
  */
@@ -16,14 +18,17 @@ class ProjectFactory extends Factory
      */
     public function definition(): array
     {
+        // Fetch a user by ID (assuming ID 1 exists)
+        $userId = User::first()->id ?? User::factory()->create()->id;
+
         return [
             'name' => $this->faker->sentence(),
             'description' => $this->faker->realText(),
             'due_date' => $this->faker->dateTimeBetween('now', '+1 year'),
             'status' => $this->faker->randomElement(['pending', 'in_progress', 'completed']),
             'image_path' => $this->faker->imageUrl(),
-            'created_by' => 1,
-            'updated_by' => 1,
+            'created_by' => $userId,
+            'updated_by' => $userId,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];

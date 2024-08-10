@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
-class Task extends Model
+class Task extends Eloquent
 {
     use HasFactory;
+
+    protected $connection = 'mongodb';
 
     protected $fillable = ['image_path', 'name', 'description', 'status', 'priority', 'due_date', 'created_by', 'updated_by', 'assigned_user_id', 'project_id'];
 

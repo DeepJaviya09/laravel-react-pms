@@ -18,8 +18,8 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $query = Project::query()->whereHas('tasks');
-
+        $query = Project::query();
+        // dd($query->get());
         $sortFields = request("sort_field", 'created_at');
         $sortDirection = request("sort_direction", "desc");
 
@@ -33,7 +33,7 @@ class ProjectController extends Controller
 
         $projects = $query->orderBy($sortFields, $sortDirection)
                         ->paginate(10)->onEachSide(1);
-
+        // dd($projects);
         return inertia("Project/Index", [
             "projects" => ProjectResource::collection($projects),
             'queryParams' =>request()->query() ?: null,
@@ -54,6 +54,7 @@ class ProjectController extends Controller
      */
     public function store(StoreProjectRequest $request)
     {
+        // dd( Auth::id());
         $data = $request->validated();
         /** @var $image \Illuminate\Http\UploadedFile */
         $image = $data['image'] ?? null;

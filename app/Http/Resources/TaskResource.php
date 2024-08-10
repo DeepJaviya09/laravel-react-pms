@@ -24,8 +24,8 @@ class TaskResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'created_at' => (new Carbon($this->created_at))->format('Y-m-d'),
-            'due_date' => (new Carbon($this->due_date))->format('Y-m-d'),
+            'created_at' => $this->formatDate($this->created_at),
+            'due_date' => $this->formatDate($this->due_date),
             'status' => $this->status,
             'priority' => $this->priority,
             'image_path' => $this->image_path ? Storage::url($this->image_path) : '',
@@ -36,5 +36,28 @@ class TaskResource extends JsonResource
             'createdBy' => new UserResource($this->createdBy),
             'updatedBy' => new UserResource($this->updatedBy),
         ];
+    }
+
+        /**
+     * Format date fields if they are valid.
+     *
+     * @param mixed $date
+     * @return string|null
+     */
+    private function formatDate($date): ?string
+    {
+        if (is_array($date) && isset($date['$date'])) {
+            return (new Carbon($date['$date']))->format('Y-m-d');
+        }
+
+        if ($date instanceof \DateTimeInterface) {
+            return $date->format('Y-m-d');
+        }
+
+        if (is_string($date)) {
+            return (new Carbon($date))->format('Y-m-d');
+        }
+
+        return null;
     }
 }
