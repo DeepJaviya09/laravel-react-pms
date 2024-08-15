@@ -112,7 +112,12 @@ return [
         'mongodb' => [
                 'driver' => 'mongodb',
                 'dsn' => env('DB_URI', 'mongodb://localhost:27017/'),
-                'host'     => env('DB_HOST', '127.0.0.1'),
+                'host' => [
+                    'cluster0-shard-00-02.0edlk.mongodb.net:27017',
+                    'cluster0-shard-00-00.0edlk.mongodb.net:27017',
+                    'cluster0-shard-00-01.0edlk.mongodb.net:27017',
+                ],
+                'replicaSet' => 'atlas-gyqjiz-shard-0',
                 'port'     => env('DB_PORT', 27017),
                 'database' => env('DB_DATABASE'),
                 'username' => env('DB_USERNAME'),
