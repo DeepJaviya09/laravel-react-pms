@@ -76,12 +76,17 @@ class ProjectController extends Controller
                     'contentType' => $image->getMimeType(),
                 ]);
     
-            if ($response->successful()) {
-                // Store the image URL in the database
-                $data['image_path'] = $response->json('url');
-            } else {
-                return back()->withErrors('Failed to upload image to Vercel Blob.');
-            }
+                if ($response->successful()) {
+                    // Store the image URL in the database
+                    $data['image_path'] = $response->json('url');
+                } else {
+                    // Log the response for debugging
+                    \Log::error('Vercel Blob Upload Failed', [
+                        'status' => $response->status(),
+                        'response' => $response->body(),
+                    ]);
+                    return back()->withErrors('Failed to upload image to Vercel Blob. Status: ' . $response->status());
+                }
         }
     
         // Create the project with the data
