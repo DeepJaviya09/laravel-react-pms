@@ -70,7 +70,7 @@ class ProjectController extends Controller
     
             // Make an HTTP POST request to upload the image to Vercel Blob
             $response = Http::withToken(env('BLOB_READ_WRITE_TOKEN'))
-                ->post('https://api.vercel.com/v1/blob', [
+                ->put('https://api.vercel.com/v1/blob', [
                     'name' => $fileName,
                     'content' => base64_encode($fileContent),
                     'contentType' => $image->getMimeType(),
