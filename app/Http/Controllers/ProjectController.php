@@ -10,7 +10,6 @@ use App\Http\Requests\UpdateProjectRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Http;
 
 class ProjectController extends Controller
 {
@@ -55,43 +54,18 @@ class ProjectController extends Controller
      */
     public function store(StoreProjectRequest $request)
     {
+        // dd( Auth::id());
         $data = $request->validated();
         /** @var $image \Illuminate\Http\UploadedFile */
         $image = $data['image'] ?? null;
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
-    
+        // dd($data);
         if ($image) {
-            // Generate a unique file name
-            $fileName = Str::random(40) . '.' . $image->getClientOriginalExtension();
-    
-            // Get the file content
-            $fileContent = file_get_contents($image->getPathname());
-    
-            // Make an HTTP POST request to upload the image to Vercel Blob
-            $response = Http::withToken(env('BLOB_READ_WRITE_TOKEN'))
-                ->put('https://api.vercel.com/v1/blob', [
-                    'name' => $fileName,
-                    'content' => base64_encode($fileContent),
-                    'contentType' => $image->getMimeType(),
-                ]);
-    
-                if ($response->successful()) {
-                    // Store the image URL in the database
-                    $data['image_path'] = $response->json('url');
-                } else {
-                    // Log the response for debugging
-                    \Log::error('Vercel Blob Upload Failed', [
-                        'status' => $response->status(),
-                        'response' => $response->body(),
-                    ]);
-                    return back()->withErrors('Failed to upload image to Vercel Blob. Status: ' . $response->status());
-                }
+            $data['image_path'] = $image->store('project/'.Str::random(), 'public' );
         }
-    
-        // Create the project with the data
         Project::create($data);
-    
+
         return to_route('project.index')->with('success', 'Project Created');
     }
 
