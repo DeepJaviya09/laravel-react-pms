@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 use App\Http\Resources\UserResource;
-use Illuminate\Support\Facades\Storage;
 
 class ProjectResource extends JsonResource
 {
@@ -26,24 +25,10 @@ class ProjectResource extends JsonResource
             'created_at' => $this->formatDate($this->created_at),
             'due_date' => $this->formatDate($this->due_date),
             'status' => $this->status,
-            'image_data' => $this->image_path ? $this->getBase64Image($this->image_path) : '',
+            'image_url' => $this->image_path, // Updated field name
             'createdBy' => $this->createdBy ? new UserResource($this->createdBy) : null,
             'updatedBy' => $this->updatedBy ? new UserResource($this->updatedBy) : null,
         ];
-    }
-
-    /**
-     * Get the base64 encoded image.
-     *
-     * @param string $imagePath
-     * @return string
-     */
-    private function getBase64Image(string $imagePath): string
-    {
-        $image = Storage::get($imagePath);
-        $mimeType = Storage::mimeType($imagePath);
-
-        return 'data:' . $mimeType . ';base64,' . base64_encode($image);
     }
 
     /**

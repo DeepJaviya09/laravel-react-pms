@@ -1,9 +1,37 @@
+import { useState, useEffect } from 'react';
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PROJECT_STATUS_TEXT_MAP, PROJECT_STATUS_CLASS_MAP } from "@/constants";
 import { Head, Link } from "@inertiajs/react";
 import TasksTable from "../Task/TasksTable";
 
-export default function Show({ auth, success, project = {}, tasks = [], queryParams = {} }) {
+export default function Show({ auth, success, project = {}, tasks = [], queryParams = {} }) { 
+  const [imageData, setImageData] = useState(null);
+
+  useEffect(() => {
+    const fetchImageData = async () => {
+      if (project.image_url) {
+        try {
+          const response = await fetch(project.image_url);
+          if (response.ok) {
+            const data = await response.json();
+            // Extract base64 content from the JSON response
+            if (data.content) {
+              setImageData(`data:${data.contentType};base64,${data.content}`);
+            } else {
+              console.error('No image content found in response');
+            }
+          } else {
+            console.error('Failed to fetch image data:', response.statusText);
+          }
+        } catch (error) {
+          console.error('Error fetching image data:', error);
+        }
+      }
+    };
+
+    fetchImageData();
+  }, [project.image_url]);
+
   const getClassName = (status) => PROJECT_STATUS_CLASS_MAP[status] || "bg-gray-500";
 
   return (
@@ -29,9 +57,9 @@ export default function Show({ auth, success, project = {}, tasks = [], queryPar
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
           <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div>
-              {project.image_data && (
+              {imageData && (
                 <img
-                  src={project.image_data}
+                  src={imageData}
                   alt="Project Image"
                   className="w-full h-64 object-cover"
                 />

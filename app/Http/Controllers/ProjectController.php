@@ -56,42 +56,42 @@ class ProjectController extends Controller
     public function store(StoreProjectRequest $request)
     {
         $data = $request->validated();
-        /** @var $image \Illuminate\Http\UploadedFile */
         $image = $data['image'] ?? null;
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
-    
+
         if ($image) {
             // Generate a unique file name
             $fileName = Str::random(40) . '.' . $image->getClientOriginalExtension();
-    
-            // Get the file content
+
+            // Get the file content as binary
             $fileContent = file_get_contents($image->getPathname());
-    
-            // Make an HTTP POST request to upload the image to Vercel Blob
+
+            // Make an HTTP PUT request to upload the image to Vercel Blob
             $response = Http::withToken(env('BLOB_READ_WRITE_TOKEN'))
+                ->withoutVerifying()
                 ->put('https://api.vercel.com/v1/blob', [
                     'name' => $fileName,
                     'content' => base64_encode($fileContent),
                     'contentType' => $image->getMimeType(),
                 ]);
-    
-                if ($response->successful()) {
-                    // Store the image URL in the database
-                    $data['image_path'] = $response->json('url');
-                } else {
-                    // Log the response for debugging
-                    \Log::error('Vercel Blob Upload Failed', [
-                        'status' => $response->status(),
-                        'response' => $response->body(),
-                    ]);
-                    return back()->withErrors('Failed to upload image to Vercel Blob. Status: ' . $response->status());
-                }
+
+            if ($response->successful()) {
+                // Store the image URL in the database
+                $data['image_path'] = $response->json('url');
+            } else {
+                // Log the response for debugging
+                \Log::error('Vercel Blob Upload Failed', [
+                    'status' => $response->status(),
+                    'response' => $response->body(),
+                ]);
+                return back()->withErrors('Failed to upload image to Vercel Blob. Status: ' . $response->status());
+            }
         }
-    
+
         // Create the project with the data
         Project::create($data);
-    
+
         return to_route('project.index')->with('success', 'Project Created');
     }
 
