@@ -137,23 +137,76 @@ class ProjectController extends Controller
      */
     public function update(UpdateProjectRequest $request, Project $project)
     {
-        // dd($request->all());
         $data = $request->validated();
-        // dd($data);
         $image = $data['image'] ?? null;
         $data['updated_by'] = Auth::id();
         
+        // Check if a new image is provided
         if ($image) {
+            // Delete the existing image from Vercel Blob if it exists
             if ($project->image_path) {
-                Storage::disk('public')->delete(dirname($project->image_path));
+                $this->deleteBlob($project->image_path);
             }
-            $data['image_path'] = $image->store('project/'.Str::random(), 'public');
+    
+            // Generate a unique file name
+            $fileName = Str::random(40) . '.' . $image->getClientOriginalExtension();
+    
+            // Get the file content as binary
+            $fileContent = file_get_contents($image->getPathname());
+    
+            // Make an HTTP PUT request to upload the image to Vercel Blob
+            $response = Http::withToken(env('BLOB_READ_WRITE_TOKEN'))
+                ->withoutVerifying()
+                ->put('https://api.vercel.com/v1/blob', [
+                    'name' => $fileName,
+                    'content' => base64_encode($fileContent),
+                    'contentType' => $image->getMimeType(),
+                ]);
+    
+            if ($response->successful()) {
+                // Store the new image URL in the database
+                $data['image_path'] = $response->json('url');
+            } else {
+                // Log the response for debugging
+                \Log::error('Vercel Blob Upload Failed', [
+                    'status' => $response->status(),
+                    'response' => $response->body(),
+                ]);
+                return back()->withErrors('Failed to upload image to Vercel Blob. Status: ' . $response->status());
+            }
         }
+    
+        // Update the project with the new data
         $project->update($data);
-
-        return to_route('project.index')->with('success', "Project {$project->name} hasbeen updated !");
+    
+        return to_route('project.index')->with('success', "Project {$project->name} has been updated!");
     }
 
+
+    /**
+     * Delete the image from Vercel Blob.
+     *
+     * @param string $imageUrl
+     * @return void
+     */
+    private function deleteBlob(string $blobUrl): void
+    {
+        // Assuming the URL is the full URL; adjust if you need only a part
+        $response = Http::withToken(env('BLOB_READ_WRITE_TOKEN'))
+            ->withoutVerifying()
+            ->delete($blobUrl);  // Directly use the URL if that's how Vercel expects it
+    
+        \Log::info("Delete Blob Response Status: " . $response->status());
+        \Log::info("Delete Blob Response Body: " . $response->body());
+    
+        if (!$response->successful()) {
+            \Log::error('Vercel Blob Delete Failed', [
+                'status' => $response->status(),
+                'response' => $response->body(),
+            ]);
+        }
+    }
+    
     /**
      * Remove the specified resource from storage.
      */
